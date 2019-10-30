@@ -1,4 +1,4 @@
-This sub-project builds the React frontend for NTU NLP course.
+This sub-project builds the React frontend for visualizing PPG diagram.
 ## Install  
 First, install npm dependencies:
 ```shell script

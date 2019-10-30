@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 
 import asyncio
@@ -44,10 +43,12 @@ class SerialHandler(asyncio.Protocol):
     def data_received(self, data: bytes) -> None:
         if len(data) == 1:
             self.buffer += data.decode('utf-8')
-            if self.buffer.endswith(os.linesep):
+            if self.buffer.endswith('\r\n'):
                 try:
-                    value = int(self.buffer.rstrip())
-                    SerialHandler.push_value({'x': datetime.now().timestamp() - base_time, 'y': value})
+                    buffers = self.buffer.rsplit('\r\n')
+                    time = datetime.now().timestamp() - base_time
+                    data = [{'x': time + 0.01 * idx, 'y': int(s.rstrip())} for idx, s in enumerate(buffers)]
+                    SerialHandler.push_value(data)
                 except ValueError:
                     pass
                 self.buffer = ''
@@ -56,9 +57,9 @@ class SerialHandler(asyncio.Protocol):
         asyncio.get_event_loop().stop()
 
     @classmethod
-    def push_value(cls, value):
-        arr.pop(0)
-        arr.append(value)
+    def push_value(cls, data: list):
+        global arr
+        arr = arr[len(data):] + data
 
 
 t = threading.Thread(target=PortReader)
